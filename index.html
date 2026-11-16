@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101114">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Turik Gym">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>Turik Gym</title>
+<style>
+:root{color-scheme:dark;--bg:#101114;--panel:#1b1d22;--panel2:#24272e;--text:#f5f6f8;--muted:#9da3ae;--accent:#c7ff4a;--line:#30343d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom));}
+main{max-width:650px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;padding:18px 2px 12px}.brand{font-weight:900;font-size:23px;letter-spacing:-.7px}.brand span{color:var(--accent)}.date{color:var(--muted);font-size:12px}
+h1{font-size:29px;margin:16px 0 5px;letter-spacing:-1px}.sub{color:var(--muted);margin:0 0 20px;font-size:14px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:13px 8px;border-radius:14px;font-weight:800;font-size:14px}.tab.active{background:var(--accent);color:#111;border-color:var(--accent)}
+.progress{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:15px}.progline{height:7px;background:#343841;border-radius:9px;overflow:hidden;margin-top:10px}.progfill{height:100%;width:0;background:var(--accent);transition:width .2s}.between{display:flex;justify-content:space-between;gap:10px;font-size:13px}.muted{color:var(--muted)}
+.exercise{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}.exhead{display:flex;gap:12px;align-items:flex-start}.check{appearance:none;width:23px;height:23px;flex:0 0 23px;border:2px solid #646b77;border-radius:7px;margin:1px 0 0}.check:checked{background:var(--accent);border-color:var(--accent)}.check:checked:after{content:"✓";display:block;color:#111;font-weight:900;text-align:center;line-height:19px}.exname{font-weight:800;line-height:1.25}.details{font-size:13px;color:var(--muted);margin-top:5px}.inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0 0 35px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}.field input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px;font-size:16px;outline:none}.field input:focus{border-color:var(--accent)}
+.note{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text);padding:13px;font:inherit;resize:vertical;min-height:72px;margin-top:10px}.actions{display:flex;gap:9px;margin-top:13px}.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:800;background:var(--accent);color:#111;flex:1}.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}.section{font-weight:800;margin:22px 2px 8px}.info{font-size:13px;color:var(--muted);line-height:1.5;background:#17191e;padding:13px;border-radius:13px;margin-top:16px}.historyitem{border-bottom:1px solid var(--line);padding:10px 0;font-size:13px}.historyitem strong{display:block;font-size:14px;margin-bottom:4px}.hidden{display:none}
+</style>
+</head>
+<body>
+<main>
+ <div class="top"><div class="brand">TURIK <span>GYM</span></div><div class="date" id="today"></div></div>
+ <h1>Тренировка верха</h1><p class="sub">Твой план · 3 раза в неделю · без ног</p>
+ <div class="tabs">
+  <button class="tab active" data-day="mon">ПОНЕДЕЛЬНИК</button>
+  <button class="tab" data-day="wed">СРЕДА</button>
+  <button class="tab" data-day="fri">ПЯТНИЦА</button>
+ </div>
+ <section class="progress">
+  <div class="between"><strong id="daytitle">Понедельник</strong><span class="muted" id="count">0 из 6 выполнено</span></div>
+  <div class="progline"><div class="progfill" id="bar"></div></div>
+ </section>
+ <div id="exercises"></div>
+ <div class="section">Заметка к тренировке</div>
+ <textarea class="note" id="note" placeholder="Самочувствие, что получилось, что улучшить..."></textarea>
+ <div class="actions"><button class="btn" id="save">Сохранить тренировку</button><button class="btn secondary" id="reset">Сбросить</button></div>
+ <div class="section">История</div><div id="history" class="muted">Пока нет сохранённых тренировок.</div>
+ <div class="info"><b>Как прогрессировать:</b> сначала доводи все подходы до верхней границы повторений. Когда получается чисто — добавь небольшой вес. Не работай через боль и оставляй примерно 2–3 повтора в запасе. Первые две недели после долгого перерыва делай меньше подходов и не гонись за весами.</div>
+</main>
+<script>
+const plan={
+mon:{title:"Понедельник · плечи + грудь",items:[["Жим гантелей сидя","2 подхода × 8–12 повторений"],["Жим штанги лёжа","3 × 8–10"],["Подтягивания","3 × 6–10"],["Махи гантелями в стороны","3 × 12–15"],["Сгибание рук с EZ-штангой","2 × 10–12"],["Разгибание рук на блоке","2 × 10–12"]]},
+wed:{title:"Среда · спина + руки",items:[["Тяга верхнего блока","3 × 8–12"],["Жим гантелей на наклонной скамье","3 × 8–12"],["Горизонтальная тяга с упором грудью","3 × 8–12"],["Махи на блоке в стороны","3 × 12–15"],["Сгибание рук на скамье Скотта","2 × 10–12"],["Разгибание рук из-за головы на блоке","2 × 10–12"]]},
+fri:{title:"Пятница · общий объём верха",items:[["Жим плеч в тренажёре","2 × 8–12"],["Жим от груди в тренажёре","3 × 8–12"],["Тяга верхнего блока нейтральным хватом","3 × 8–12"],["Обратная бабочка","2 × 12–15"],["Молотки с гантелями","2 × 10–12"],["Разгибание рук на блоке","2 × 10–12"],["Сгибание рук на нижнем блоке","2 × 12–15"]]}
+};
+let day="mon";
+const $=id=>document.getElementById(id);
+const key=()=>`turikgym-${day}`;
+function load(){try{return JSON.parse(localStorage.getItem(key()))||{checks:[],weights:[],reps:[],note:""}}catch(e){return {checks:[],weights:[],reps:[],note:""}}}
+function render(){
+ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.day===day));
+ const p=plan[day],d=load();$("daytitle").textContent=p.title;$("note").value=d.note||"";
+ $("exercises").innerHTML=p.items.map((it,i)=>`<article class="exercise"><div class="exhead"><input class="check" type="checkbox" data-i="${i}" ${d.checks.includes(i)?"checked":""}><div><div class="exname">${it[0]}</div><div class="details">${it[1]}</div></div></div><div class="inputs"><div class="field"><label>Рабочий вес (кг)</label><input inputmode="decimal" placeholder="Например, 40" data-weight="${i}" value="${d.weights[i]||""}"></div><div class="field"><label>Повторения / заметка</label><input placeholder="Например, 10/9/8" data-reps="${i}" value="${d.reps[i]||""}"></div></div></article>`).join("");
+ document.querySelectorAll(".check").forEach(x=>x.addEventListener("change",e=>{const d=load(),i=+e.target.dataset.i;d.checks=e.target.checked?[...new Set([...d.checks,i])]:d.checks.filter(n=>n!==i);store(d);progress()}));
+ document.querySelectorAll("[data-weight],[data-reps]").forEach(x=>x.addEventListener("input",()=>{const d=load();if(x.dataset.weight!==undefined)d.weights[+x.dataset.weight]=x.value;else d.reps[+x.dataset.reps]=x.value;store(d)}));
+ progress();
+}
+function store(d){localStorage.setItem(key(),JSON.stringify(d))}
+function progress(){const d=load(),n=plan[day].items.length,c=d.checks.length;$("count").textContent=`${c} из ${n} выполнено`;$("bar").style.width=(100*c/n)+"%"}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{day=b.dataset.day;render()}));
+$("note").addEventListener("input",e=>{const d=load();d.note=e.target.value;store(d)});
+$("save").addEventListener("click",()=>{const d=load();d.note=$("note").value;store(d);let h=JSON.parse(localStorage.getItem("turikgym-history")||"[]");h.unshift({date:new Date().toLocaleString("ru-RU"),day:plan[day].title,done:d.checks.length,total:plan[day].items.length});localStorage.setItem("turikgym-history",JSON.stringify(h.slice(0,30)));showHistory();$("save").textContent="Сохранено ✓";setTimeout(()=>$("save").textContent="Сохранить тренировку",1500)});
+$("reset").addEventListener("click",()=>{if(confirm("Сбросить отметки и веса этой тренировки?")){localStorage.removeItem(key());render()}});
+function showHistory(){let h=JSON.parse(localStorage.getItem("turikgym-history")||"[]");$("history").innerHTML=h.length?h.map(x=>`<div class="historyitem"><strong>${x.day}</strong>${x.date} · выполнено ${x.done}/${x.total}</div>`).join(""):"Пока нет сохранённых тренировок."}
+$("today").textContent=new Date().toLocaleDateString("ru-RU",{day:"numeric",month:"long"});
+render();showHistory();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
+</script>
+</body></html>
